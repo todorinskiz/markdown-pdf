@@ -33,8 +33,7 @@
     "phantomjs": "^1.9.13",
     "remarkable": "^1.6.0",
     "stream-from-to": "^1.4.2",
-    "through2": "^0.6.3",
-    "tmp": "0.0.24"
+    "through2": "^0.6.3"
   },
   "devDependencies": {
     "coveralls": "^2.10.0",
