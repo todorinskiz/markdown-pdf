@@ -5,11 +5,9 @@ var fs = require("fs")
   , extend = require("extend")
   , Remarkable = require("remarkable")
   , hljs = require("highlight.js")
-  , tmp = require("tmp")
   , duplexer = require("duplexer")
   , streamft = require("stream-from-to")
 
-tmp.setGracefulCleanup()
 
 function markdownpdf (opts) {
   opts = opts || {}
@@ -73,15 +71,17 @@ function markdownpdf (opts) {
   // Stop input stream emitting data events until we're ready to read them
   inputStream.pause()
 
-  // Create tmp file to save HTML for phantom to process
-  tmp.file({postfix: ".html"}, function (er, tmpHtmlPath, tmpHtmlFd) {
-    if (er) return outputStream.emit("error", er)
-    fs.close(tmpHtmlFd)
+  var tmpHtmlPath = 'temp.html';
+  fs.writeFile(tmpHtmlPath, '', function (err) {
+    if (err)
+    throw err;
+  });
 
-    // Create tmp file to save PDF to
-    tmp.file({postfix: ".pdf"}, function (er, tmpPdfPath, tmpPdfFd) {
-      if (er) return outputStream.emit("error", er)
-      fs.close(tmpPdfFd)
+  var tmpPdfPath = 'temp.pdf';
+  fs.writeFile(tmpPdfPath, '', function (err) {
+    if (err)
+    throw err;
+  });
 
       var htmlToTmpHtmlFile = fs.createWriteStream(tmpHtmlPath)
 
@@ -107,6 +107,8 @@ function markdownpdf (opts) {
           //if (stderr) console.error(stderr)
           if (er) return outputStream.emit("error", er)
           fs.createReadStream(tmpPdfPath).pipe(outputStream)
+		  fs.unlinkSync(tmpHtmlPath);
+		  fs.unlinkSync(tmpPdfPath);
         })
       })
 
@@ -118,8 +120,6 @@ function markdownpdf (opts) {
         .pipe(htmlToTmpHtmlFile)
 
       inputStream.resume()
-    })
-  })
 
   return extend(
     duplexer(inputStream, outputStream),
